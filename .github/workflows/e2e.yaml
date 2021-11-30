@@ -434,6 +434,7 @@ jobs:
   delete-org:
     runs-on: ubuntu-latest
     needs: [start-servers-and-tests, mentoring-service-prepare]
+    if: always()
 
     steps:
 
