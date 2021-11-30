@@ -1,0 +1,461 @@
+# See confluence for the documentation
+name: Together E2E Testing Workflow
+
+on:
+  workflow_call:
+    inputs:
+      username:
+        required: true
+        type: string
+      branch:
+        required: true
+        type: string
+    secrets:
+      token:
+        required: true
+      gcp:
+        required: true
+
+jobs:
+
+  # This job pull latest version of mentoring-service's branch that initiated this workflow or production if not found...
+  # ... installs all dependencies and caches the result
+  # Provides output of:
+  #   @branch - representing the branch that is used for this job
+  #   @commit - representing the commit that is used for this job
+  mentoring-service-prepare:
+    runs-on: ubuntu-latest
+
+    outputs:
+      branch: ${{ steps.pick_branch.outputs.branch }}
+      commit: ${{ steps.pick_branch.outputs.commit }}
+
+    steps:
+
+      - name: Determine branch and commit
+        id: pick_branch
+        shell: bash
+        run: |
+          BRANCH=${{ inputs.branch }}
+          if git ls-remote --exit-code --heads https://${{ inputs.username }}:${{ secrets.token }}@github.com/together-platform/mentoring-service ${BRANCH}; then
+            echo "Branch found"
+          else
+            BRANCH="production"
+          fi
+          COMMIT_ID=$(git ls-remote --exit-code --heads https://${{ inputs.username }}:${{ secrets.token }}@github.com/together-platform/mentoring-service ${BRANCH} | awk '{ print $1}')
+          echo "::set-output name=branch::${BRANCH}"
+          echo "::set-output name=commit::${COMMIT_ID}"
+          echo $BRANCH:$COMMIT_ID
+
+      # If we already have cached version for this commit then we can skip all further steps
+      - name: Try to find this version in cache
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: ./mentoring-service
+          key: mentoring-service-source-and-dependencies-${{steps.pick_branch.outputs.commit}}
+
+      - name: Fetch branch + commit
+        uses: actions/checkout@v2
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          repository: together-platform/mentoring-service
+          ref: ${{ steps.pick_branch.outputs.branch }}
+          path: mentoring-service
+          token: ${{ secrets.token }}
+
+      - name: Use Node.js 12.16.1
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12.16.1
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm install yarn && yarn install
+        working-directory: ./mentoring-service
+
+      - name: Set cache
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v2
+        with:
+          path: ./mentoring-service
+          key: mentoring-service-source-and-dependencies-${{steps.pick_branch.outputs.commit}}
+
+  # This job pull latest version of mentoring-frontends's branch that initiated this workflow or production if not found...
+  # ... installs all dependencie, make build and set cache
+  # Provides output of:
+  #   @branch - representing the branch that is used for this job
+  #   @commit - representing the commit that is used for this job
+  mentoring-frontend-prepare:
+    runs-on: ubuntu-latest
+
+    outputs:
+      branch: ${{ steps.pick_branch.outputs.branch }}
+      commit: ${{ steps.pick_branch.outputs.commit }}
+
+    steps:
+
+      - name: Determine branch and commit
+        id: pick_branch
+        shell: bash
+        run: |
+          BRANCH=${{ inputs.branch }}
+          if git ls-remote --exit-code --heads https://${{ inputs.username }}:${{ secrets.token }}@github.com/together-platform/mentoring-frontend ${BRANCH}; then
+            echo "Branch found"
+          else
+            BRANCH="production"
+          fi
+          COMMIT_ID=$(git ls-remote --exit-code --heads https://${{ inputs.username }}:${{ secrets.token }}@github.com/together-platform/mentoring-frontend ${BRANCH} | awk '{ print $1}')
+          echo "::set-output name=branch::${BRANCH}"
+          echo "::set-output name=commit::${COMMIT_ID}"
+          echo $BRANCH:$COMMIT_ID
+
+      # If we already have cached version for this commit then we can skip all further steps
+      - name: Try to find this version in cache
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: ./mentoring-frontend
+          key: mentoring-frontend-build-${{steps.pick_branch.outputs.commit}}
+
+      - name: Fetch branch + commit
+        uses: actions/checkout@v2
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          repository: together-platform/mentoring-frontend
+          ref: ${{ steps.pick_branch.outputs.branch }}
+          path: mentoring-frontend
+          token: ${{ secrets.token }}
+
+      - name: Use Node.js 12.18.0
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12.18.0
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm install yarn && yarn install && yarn add serve
+        working-directory: ./mentoring-frontend
+        env:
+          REACT_APP_ENV: 'staging'
+          CI: false
+
+      - name: Create build
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: sh -ac '. ./.env; yarn build-app && yarn build-write-release-version'
+        working-directory: ./mentoring-frontend
+        env:
+          REACT_APP_ENV: 'staging'
+
+      - name: Set cache
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v2
+        with:
+          path: ./mentoring-frontend
+          key: mentoring-frontend-build-${{steps.pick_branch.outputs.commit}}
+
+  # This job pull latest version of pairing-service's branch that initiated this workflow or production if not found...
+  # ... installs all dependencies and set 2 caches: for dependencies folder and sources folder
+  # Provides output of:
+  #   @branch - representing the branch that is used for this job
+  #   @commit - representing the commit that is used for this job
+  pairing-service-prepare:
+
+    runs-on: ubuntu-latest
+
+    outputs:
+      branch: ${{ steps.pick_branch.outputs.branch }}
+      commit: ${{ steps.pick_branch.outputs.commit }}
+
+    steps:
+
+      - name: Determine branch and commit
+        id: pick_branch
+        shell: bash
+        run: |
+          BRANCH=${{ inputs.branch }}
+          if git ls-remote --exit-code --heads https://${{ inputs.username }}:${{ secrets.token }}@github.com/together-platform/pairing-service ${BRANCH}; then
+            echo "Branch found"
+          else
+            BRANCH="production"
+          fi
+          COMMIT_ID=$(git ls-remote --exit-code --heads https://${{ inputs.username }}:${{ secrets.token }}@github.com/together-platform/pairing-service ${BRANCH} | awk '{ print $1}')
+          echo "::set-output name=branch::${BRANCH}"
+          echo "::set-output name=commit::${COMMIT_ID}"
+          echo $BRANCH:$COMMIT_ID
+
+      # If we already have cached version for this commit then we can skip all further steps
+      - name: Try to find this version in cache
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: ./pairing-service
+          key: pairing-service-source-${{steps.pick_branch.outputs.commit}}
+
+      - name: Fetch branch + commit
+        uses: actions/checkout@v2
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          repository: together-platform/pairing-service
+          ref: ${{ steps.pick_branch.outputs.branch }}
+          path: pairing-service
+          token: ${{ secrets.token }}
+
+      - name: Set up Python 3.7.5
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.7.5"
+
+      - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.lock ]; then pip install -r requirements.lock; fi
+        working-directory: ./pairing-service
+
+      - name: Set cache for dependencies folder
+        uses: actions/cache@v2
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: /opt/hostedtoolcache/Python/3.7.5/x64/lib/python3.7/site-packages
+          key: pairing-service-dependencies-${{steps.pick_branch.outputs.commit}}
+
+      - name: Set cache for sources folder
+        uses: actions/cache@v2
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: ./pairing-service
+          key: pairing-service-source-${{steps.pick_branch.outputs.commit}}
+
+  # THIS REPO holds e2e tests and test runner (cypress)
+  # This job pull latest version of e2e-testing's branch that initiated this workflow or production if not found...
+  # ... installs all dependencies and set 2 caches: for dependencies folder and sources folder
+  # Provides output of:
+  #   @branch - representing the branch that is used for this job
+  #   @commit - representing the commit that is used for this job
+  e2e-testing-prepare:
+    runs-on: ubuntu-latest
+
+    outputs:
+      branch: ${{ steps.pick_branch.outputs.branch }}
+      commit: ${{ steps.pick_branch.outputs.commit }}
+
+    steps:
+      - name: Determine branch and commit
+        id: pick_branch
+        shell: bash
+        run: |
+          BRANCH=${{ inputs.branch }}
+          if git ls-remote --exit-code --heads https://${{ inputs.username }}:${{ secrets.token }}@github.com/together-platform/e2e-testing ${BRANCH}; then
+            echo "Branch found"
+          else
+            BRANCH="production"
+          fi
+          COMMIT_ID=$(git ls-remote --exit-code --heads https://${{ inputs.username }}:${{ secrets.token }}@github.com/together-platform/e2e-testing ${BRANCH} | awk '{ print $1}')
+          echo "::set-output name=branch::${BRANCH}"
+          echo "::set-output name=commit::${COMMIT_ID}"
+          echo $BRANCH:$COMMIT_ID
+
+      # If we already have cached version for this commit then we can skip all further steps
+      - name: Try to find this version in cache
+        id: cache
+        uses: actions/cache@v2
+        with:
+          path: ./e2e-testing
+          key: e2e-testing-source-${{steps.pick_branch.outputs.commit}}
+
+      - name: Fetch branch + commit
+        uses: actions/checkout@v2
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          repository: together-platform/e2e-testing
+          ref: ${{ steps.pick_branch.outputs.branch }}
+          path: e2e-testing
+          token: ${{ secrets.token }}
+
+      - name: Use Node.js 12.18.0
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12.18.0
+
+      - name: Install dependencies
+        run: npm install
+        if: steps.cache.outputs.cache-hit != 'true'
+        working-directory: ./e2e-testing
+
+      - name: Set cache for sources folder
+        uses: actions/cache@v2
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: ./e2e-testing
+          key: e2e-testing-source-${{steps.pick_branch.outputs.commit}}
+
+      - name: Set cache for dependencies folder
+        uses: actions/cache@v2
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: ~/.cache/Cypress
+          key: e2e-testing-dependencies-${{steps.pick_branch.outputs.commit}}
+
+  # This job pulls cached versions of all application repos: mentoring-service, pairing-service and mentoring-frontend
+  # Also pull cached version of e2e-testing repo
+  # Runs back-end services: mentoring-service and pairing-service
+  # Runs script to create new demo org for testing
+  # Starts mentoring-frontend build by using "serve" package
+  # Runs cypress tests
+  # IF some tests are failed -> uploads videos of failed tests as an artifacts
+  # Provides output of:
+  #   @organizationId - id of the organization that was created and used for testing
+  start-servers-and-tests:
+    runs-on: ubuntu-latest
+    needs: [pairing-service-prepare, mentoring-service-prepare, mentoring-frontend-prepare, e2e-testing-prepare]
+
+    outputs:
+      organizationId: ${{ steps.create_org_for_tests.outputs.organizationId }}
+
+    steps:
+      - name: Use Node.js 12.16.1
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12.16.1
+
+      - name: Set up Python 3.7.5
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.7.5"
+
+      # Required to decode staging secrets used in back-end services
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.gcp }}
+          export_default_credentials: true
+      - name: Use gcloud CLI
+        run: gcloud info
+
+      - name: Get pairing-service source
+        uses: actions/cache@v2
+        with:
+          path: ./pairing-service
+          key: pairing-service-source-${{needs.pairing-service-prepare.outputs.commit}}
+
+      - name: Get pairing-service dependencies
+        uses: actions/cache@v2
+        with:
+          path: /opt/hostedtoolcache/Python/3.7.5/x64/lib/python3.7/site-packages
+          key: pairing-service-dependencies-${{needs.pairing-service-prepare.outputs.commit}}
+
+      - name: Get mentoring-service source and dependencies
+        uses: actions/cache@v2
+        with:
+          path: ./mentoring-service
+          key: mentoring-service-source-and-dependencies-${{needs.mentoring-service-prepare.outputs.commit}}
+
+      - name: Get mentoring-frontend
+        uses: actions/cache@v2
+        with:
+          path: ./mentoring-frontend
+          key: mentoring-frontend-build-${{needs.mentoring-frontend-prepare.outputs.commit}}
+
+      - name: Get e2e-testing source
+        uses: actions/cache@v2
+        with:
+          path: ./e2e-testing
+          key: e2e-testing-source-${{needs.e2e-testing-prepare.outputs.commit}}
+
+      - name: Get e2e-testing dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/Cypress
+          key: e2e-testing-dependencies-${{needs.e2e-testing-prepare.outputs.commit}}
+
+      - name: Start pairing-service
+        run: make start & npx wait-on http://localhost:9000/pairing/_release
+        working-directory: ./pairing-service
+        env:
+          TOGETHER_ENVIRONMENT: 'e2e-testing'
+
+      - name: Start mentoring-service
+        run: yarn start & npx wait-on http://localhost:8080/mentoring/_release
+        working-directory: ./mentoring-service
+        env:
+          TOGETHER_ENVIRONMENT: 'e2e-testing'
+
+      - name: Create new demo org for testing
+        id: create_org_for_tests
+        run: |
+          yarn babel-node lib/scripts/createDemoOrg/createDemoOrg.js E2E:${{github.run_id}} organizationId.txt && ORG_ID=$(cat "organizationId.txt") && echo "::set-output name=organizationId::${ORG_ID}"
+        working-directory: ./mentoring-service
+        env:
+          TOGETHER_ENVIRONMENT: 'e2e-testing'
+
+      - name: Change node version to 12.18.0
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12.18.0
+
+      - name: Start frontend
+        run: yarn serve -s build -l 3000 & npx wait-on http://localhost:3000
+        working-directory: ./mentoring-frontend
+
+      # Install dependencies and run all Cypress tests
+      - name: Cypress run
+        uses: cypress-io/github-action@v2
+        with:
+          browser: chrome
+          config-file: cypress.json
+          working-directory: ./e2e-testing
+        env:
+          CYPRESS_ORGANIZATION_ID: ${{steps.create_org_for_tests.outputs.organizationId}}
+
+      # after the test run completes
+      # store videos and any screenshots
+      # NOTE: screenshots will be generated only if E2E test failed
+      # thus we store screenshots only on failures
+      # Alternative: create and commit an empty cypress/screenshots folder
+      # to always have something to upload
+      - uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: ./e2e-testing/cypress/screenshots
+      # Test run video was always captured, so this action uses "always()" condition
+      - uses: actions/upload-artifact@v1
+        if: always()
+        with:
+          name: cypress-videos
+          path: ./e2e-testing/cypress/videos/
+
+  # This job runs script to delete created org for testing
+  delete-org:
+    runs-on: ubuntu-latest
+    needs: [start-servers-and-tests, mentoring-service-prepare]
+
+    steps:
+
+      - name: Get mentoring-service sources and dependencies
+        uses: actions/cache@v2
+        with:
+          path: ./mentoring-service
+          key: mentoring-service-source-and-dependencies-${{needs.mentoring-service-prepare.outputs.commit}}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          service_account_key: ${{ secrets.gcp }}
+          export_default_credentials: true
+
+      - name: Use Node.js 12.16.1
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12.16.1
+
+      - name: Delete org created for testing
+        run: yarn babel-node lib/scripts/deleteDemoOrg/deleteDemoOrg.js ${{needs.start-servers-and-tests.outputs.organizationId}}
+        working-directory: ./mentoring-service
+        env:
+          TOGETHER_ENVIRONMENT: 'e2e-testing'
