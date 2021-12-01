@@ -359,37 +359,37 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ./${{ inputs.backendPairingRepo }}
-          key: ${{ inputs.backendPairingRepo }}-source-${{needs.${{ inputs.backendPairingRepo }}-prepare.outputs.commit}}
+          key: ${{ inputs.backendPairingRepo }}-source-${{needs.backend-pairing-prepare.outputs.commit}}
 
       - name: Get ${{ inputs.backendPairingRepo }} dependencies
         uses: actions/cache@v2
         with:
           path: /opt/hostedtoolcache/Python/3.7.5/x64/lib/python3.7/site-packages
-          key: ${{ inputs.backendPairingRepo }}-dependencies-${{needs.${{ inputs.backendPairingRepo }}-prepare.outputs.commit}}
+          key: ${{ inputs.backendPairingRepo }}-dependencies-${{needs.backend-pairing-prepare.outputs.commit}}
 
       - name: Get ${{ inputs.backendMentoringRepo }} source and dependencies
         uses: actions/cache@v2
         with:
           path: ./${{ inputs.backendMentoringRepo }}
-          key: ${{ inputs.backendMentoringRepo }}-source-and-dependencies-${{needs.${{ inputs.backendMentoringRepo }}-prepare.outputs.commit}}
+          key: ${{ inputs.backendMentoringRepo }}-source-and-dependencies-${{needs.backend-mentoring-prepare.outputs.commit}}
 
       - name: Get ${{ inputs.frontendRepo }}
         uses: actions/cache@v2
         with:
           path: ./${{ inputs.frontendRepo }}
-          key: ${{ inputs.frontendRepo }}-build-${{needs.${{ inputs.frontendRepo }}-prepare.outputs.commit}}
+          key: ${{ inputs.frontendRepo }}-build-${{needs.frontend-prepare.outputs.commit}}
 
       - name: Get ${{ inputs.e2eTestsRepo }} source
         uses: actions/cache@v2
         with:
           path: ./${{ inputs.e2eTestsRepo }}
-          key: ${{ inputs.e2eTestsRepo }}-source-${{needs.${{ inputs.e2eTestsRepo }}-prepare.outputs.commit}}
+          key: ${{ inputs.e2eTestsRepo }}-source-${{needs.e2e-tests-prepare.outputs.commit}}
 
       - name: Get ${{ inputs.e2eTestsRepo }} dependencies
         uses: actions/cache@v2
         with:
           path: ~/.cache/Cypress
-          key: ${{ inputs.e2eTestsRepo }}-dependencies-${{needs.${{ inputs.e2eTestsRepo }}-prepare.outputs.commit}}
+          key: ${{ inputs.e2eTestsRepo }}-dependencies-${{needs.e2e-tests-prepare.outputs.commit}}
 
       - name: Start ${{ inputs.backendPairingRepo }}
         run: make start & npx wait-on http://localhost:9000/pairing/_release
@@ -460,7 +460,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ./${{ inputs.backendMentoringRepo }}
-          key: ${{ inputs.backendMentoringRepo }}-source-and-dependencies-${{needs.${{ inputs.backendMentoringRepo }}-prepare.outputs.commit}}
+          key: ${{ inputs.backendMentoringRepo }}-source-and-dependencies-${{needs.backend-mentoring-prepare.outputs.commit}}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@master
