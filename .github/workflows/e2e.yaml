@@ -43,6 +43,7 @@ jobs:
   #   @commit - representing the commit that is used for this job
   backend-mentoring-prepare:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     outputs:
       branch: ${{ steps.pick_branch.outputs.branch }}
@@ -107,6 +108,7 @@ jobs:
   #   @commit - representing the commit that is used for this job
   frontend-prepare:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     outputs:
       branch: ${{ steps.pick_branch.outputs.branch }}
@@ -182,6 +184,7 @@ jobs:
   backend-pairing-prepare:
 
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     outputs:
       branch: ${{ steps.pick_branch.outputs.branch }}
@@ -256,6 +259,7 @@ jobs:
   #   @commit - representing the commit that is used for this job
   e2e-tests-prepare:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     outputs:
       branch: ${{ steps.pick_branch.outputs.branch }}
@@ -330,6 +334,7 @@ jobs:
   #   @organizationId - id of the organization that was created and used for testing
   start-servers-and-tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: [backend-pairing-prepare, backend-mentoring-prepare, frontend-prepare, e2e-tests-prepare]
 
     outputs:
@@ -451,6 +456,7 @@ jobs:
   # This job runs script to delete created org for testing
   delete-org:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     needs: [start-servers-and-tests, backend-mentoring-prepare]
     if: always()
 
