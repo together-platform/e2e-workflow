@@ -334,7 +334,7 @@ jobs:
   #   @organizationId - id of the organization that was created and used for testing
   start-servers-and-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     needs: [backend-pairing-prepare, backend-mentoring-prepare, frontend-prepare, e2e-tests-prepare]
 
     outputs:
