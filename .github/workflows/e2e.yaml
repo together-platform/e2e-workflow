@@ -353,7 +353,7 @@ jobs:
 
       # Required to decode secrets used in back-end services
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0
         with:
           service_account_key: ${{ secrets.gcp }}
           export_default_credentials: true
@@ -469,7 +469,7 @@ jobs:
           key: ${{ inputs.backendMentoringRepo }}-source-and-dependencies-${{needs.backend-mentoring-prepare.outputs.commit}}
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0
         with:
           service_account_key: ${{ secrets.gcp }}
           export_default_credentials: true
