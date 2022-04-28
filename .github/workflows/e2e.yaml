@@ -33,6 +33,8 @@ on:
         required: true
       gcp:
         required: true
+      demo_admin_password:
+        required: true
 
 jobs:
 
@@ -434,6 +436,7 @@ jobs:
           working-directory: ./${{ inputs.e2eTestsRepo }}
         env:
           CYPRESS_ORGANIZATION_ID: ${{steps.create_org_for_tests.outputs.organizationId}}
+          CYPRESS_ADMIN_PASSWORD: ${{secrets.demo_admin_password}}
 
       # after the test run completes
       # store videos and any screenshots
