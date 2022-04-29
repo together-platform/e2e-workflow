@@ -405,7 +405,7 @@ jobs:
           TOGETHER_ENVIRONMENT: ${{ inputs.backendEnvironment }}
 
       - name: Start ${{ inputs.backendMentoringRepo }}
-        run: yarn start & npx wait-on http://localhost:8080/mentoring/_release
+        run: yarn start-production & npx wait-on http://localhost:8080/mentoring/_release
         working-directory: ./${{ inputs.backendMentoringRepo }}
         env:
           TOGETHER_ENVIRONMENT: ${{ inputs.backendEnvironment }}
