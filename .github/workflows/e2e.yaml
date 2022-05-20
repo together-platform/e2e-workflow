@@ -413,7 +413,7 @@ jobs:
       - name: Create new demo org for testing
         id: create_org_for_tests
         run: |
-          yarn babel-node lib/scripts/createDemoOrg/createDemoOrg.js E2E:${{github.run_id}} organizationId.txt && ORG_ID=$(cat "organizationId.txt") && echo "::set-output name=organizationId::${ORG_ID}"
+          yarn babel-node --extensions ".ts,.js" lib/scripts/createDemoOrg/createDemoOrg.js E2E:${{github.run_id}} organizationId.txt && ORG_ID=$(cat "organizationId.txt") && echo "::set-output name=organizationId::${ORG_ID}"
         working-directory: ./${{ inputs.backendMentoringRepo }}
         env:
           TOGETHER_ENVIRONMENT: ${{ inputs.backendEnvironment }}
@@ -483,7 +483,7 @@ jobs:
           node-version: 12.16.1
 
       - name: Delete org created for testing
-        run: yarn babel-node lib/scripts/deleteDemoOrg/deleteDemoOrg.js ${{needs.start-servers-and-tests.outputs.organizationId}}
+        run: yarn babel-node --extensions ".ts,.js" lib/scripts/deleteDemoOrg/deleteDemoOrg.js ${{needs.start-servers-and-tests.outputs.organizationId}}
         working-directory: ./${{ inputs.backendMentoringRepo }}
         env:
           TOGETHER_ENVIRONMENT: ${{ inputs.backendEnvironment }}
