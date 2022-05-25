@@ -155,10 +155,11 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 16.15.0
+          cache: 'yarn'
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm install yarn && yarn install && yarn add serve
+        run: yarn install && yarn add serve
         working-directory: ./${{ inputs.frontendRepo }}
         env:
           REACT_APP_ENV: ${{ inputs.frontendEnvironment }}
