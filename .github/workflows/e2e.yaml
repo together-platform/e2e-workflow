@@ -159,7 +159,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: yarn install && yarn add serve
+        run: pwd && ls && yarn install && yarn add serve
         working-directory: ./${{ inputs.frontendRepo }}
         env:
           REACT_APP_ENV: ${{ inputs.frontendEnvironment }}
