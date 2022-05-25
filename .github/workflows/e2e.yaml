@@ -420,10 +420,10 @@ jobs:
         env:
           TOGETHER_ENVIRONMENT: ${{ inputs.backendEnvironment }}
 
-      - name: Change node version to 12.18.0
+      - name: Change to frontend node version
         uses: actions/setup-node@v2
         with:
-          node-version: 12.18.0
+          node-version-file: './${{ inputs.frontendRepo }}/.nvmrc'
 
       - name: Start frontend
         run: yarn serve -s build -l 3000 & npx wait-on http://localhost:3000
