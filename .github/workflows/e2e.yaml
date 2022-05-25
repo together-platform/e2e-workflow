@@ -150,15 +150,17 @@ jobs:
           path: ${{ inputs.frontendRepo }}
           token: ${{ secrets.token }}
 
-      - name: Use Node.js 12.18.0
+      - name: Use Node.js
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/setup-node@v2
         with:
-          node-version: 12.18.0
+          cache: 'yarn'
+          cache-dependency-path: './${{ inputs.frontendRepo }}/yarn.lock'
+          node-version-file: './${{ inputs.frontendRepo }}/.nvmrc'
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm install yarn && yarn install && yarn add serve
+        run: yarn install && yarn add serve
         working-directory: ./${{ inputs.frontendRepo }}
         env:
           REACT_APP_ENV: ${{ inputs.frontendEnvironment }}
@@ -418,14 +420,19 @@ jobs:
         env:
           TOGETHER_ENVIRONMENT: ${{ inputs.backendEnvironment }}
 
-      - name: Change node version to 12.18.0
+      - name: Change to frontend node version
         uses: actions/setup-node@v2
         with:
-          node-version: 12.18.0
+          node-version-file: './${{ inputs.frontendRepo }}/.nvmrc'
 
       - name: Start frontend
         run: yarn serve -s build -l 3000 & npx wait-on http://localhost:3000
         working-directory: ./${{ inputs.frontendRepo }}
+        
+      - name: Change node version to 12.18.0
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12.18.0
 
       # Install dependencies and run all Cypress tests
       - name: Cypress run
