@@ -304,11 +304,11 @@ jobs:
           path: ${{ inputs.e2eTestsRepo }}
           token: ${{ secrets.token }}
 
-      - name: Use Node.js 12.18.0
+      - name: Use Node.js
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/setup-node@v2
         with:
-          node-version: 12.18.0
+          node-version-file: './${{ inputs.backendMentoringRepo }}/.nvmrc'
 
       - name: Install dependencies
         run: npm install
@@ -431,10 +431,10 @@ jobs:
         run: yarn serve -s build -l 3000 & npx wait-on http://localhost:3000
         working-directory: ./${{ inputs.frontendRepo }}
         
-      - name: Change node version to 12.18.0
+      - name: Change to e2e node version
         uses: actions/setup-node@v2
         with:
-          node-version: 12.18.0
+          node-version-file: './${{ inputs.backendMentoringRepo }}/.nvmrc'
 
       # Install dependencies and run all Cypress tests
       - name: Cypress run
