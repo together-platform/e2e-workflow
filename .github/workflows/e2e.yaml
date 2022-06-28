@@ -309,8 +309,8 @@ jobs:
         uses: actions/setup-node@v2
         with:
           cache: 'yarn'
-          cache-dependency-path: './${{ inputs.backendMentoringRepo }}/yarn.lock'
-          node-version-file: './${{ inputs.backendMentoringRepo }}/.nvmrc'
+          cache-dependency-path: './${{ inputs.e2eTestsRepo }}/yarn.lock'
+          node-version-file: './${{ inputs.e2eTestsRepo }}/.nvmrc'
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
