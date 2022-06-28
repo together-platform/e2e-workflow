@@ -397,16 +397,16 @@ jobs:
           path: ~/.cache/Cypress
           key: ${{ inputs.e2eTestsRepo }}-dependencies-${{needs.e2e-tests-prepare.outputs.commit}}
 
-      - name: Use backend Node.js version
-        uses: actions/setup-node@v2
-        with:
-          node-version-file: './${{ inputs.backendMentoringRepo }}/.nvmrc'
-
       - name: Start ${{ inputs.backendPairingRepo }}
         run: make start & npx wait-on http://localhost:9000/pairing/_release
         working-directory: ./${{ inputs.backendPairingRepo }}
         env:
           TOGETHER_ENVIRONMENT: ${{ inputs.backendEnvironment }}
+
+      - name: Use backend Node.js version
+        uses: actions/setup-node@v2
+        with:
+          node-version-file: './${{ inputs.backendMentoringRepo }}/.nvmrc'
 
       - name: Start ${{ inputs.backendMentoringRepo }}
         run: yarn start-production & npx wait-on http://localhost:8080/mentoring/_release
