@@ -95,7 +95,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: yarn install
+        run: yarn install --frozen-lockfile
         working-directory: ./${{ inputs.backendMentoringRepo }}
 
       - name: Set cache
@@ -162,7 +162,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: yarn install && yarn add serve
+        run: yarn install --frozen-lockfile && yarn add serve
         working-directory: ./${{ inputs.frontendRepo }}
         env:
           REACT_APP_ENV: ${{ inputs.frontendEnvironment }}
@@ -313,7 +313,7 @@ jobs:
           node-version-file: './${{ inputs.backendMentoringRepo }}/.nvmrc'
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ./${{ inputs.e2eTestsRepo }}
 
