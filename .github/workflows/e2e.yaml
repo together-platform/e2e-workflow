@@ -308,6 +308,8 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/setup-node@v2
         with:
+          cache: 'yarn'
+          cache-dependency-path: './${{ inputs.backendMentoringRepo }}/yarn.lock'
           node-version-file: './${{ inputs.backendMentoringRepo }}/.nvmrc'
 
       - name: Install dependencies
