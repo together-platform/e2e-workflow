@@ -85,15 +85,17 @@ jobs:
           path: ${{ inputs.backendMentoringRepo }}
           token: ${{ secrets.token }}
 
-      - name: Use Node.js 12.16.1
+      - name: Use Node.js
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/setup-node@v2
         with:
-          node-version: 12.16.1
+          cache: 'yarn'
+          cache-dependency-path: './${{ inputs.backendMentoringRepo }}/yarn.lock'
+          node-version-file: './${{ inputs.backendMentoringRepo }}/.nvmrc'
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: npm install yarn && yarn install
+        run: yarn install --frozen-lockfile
         working-directory: ./${{ inputs.backendMentoringRepo }}
 
       - name: Set cache
@@ -160,7 +162,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: yarn install && yarn add serve
+        run: yarn install --frozen-lockfile && yarn add serve
         working-directory: ./${{ inputs.frontendRepo }}
         env:
           REACT_APP_ENV: ${{ inputs.frontendEnvironment }}
@@ -302,14 +304,16 @@ jobs:
           path: ${{ inputs.e2eTestsRepo }}
           token: ${{ secrets.token }}
 
-      - name: Use Node.js 12.18.0
+      - name: Use Node.js
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/setup-node@v2
         with:
-          node-version: 12.18.0
+          cache: 'yarn'
+          cache-dependency-path: './${{ inputs.e2eTestsRepo }}/yarn.lock'
+          node-version-file: './${{ inputs.e2eTestsRepo }}/.nvmrc'
 
       - name: Install dependencies
-        run: npm install
+        run: yarn install --frozen-lockfile
         if: steps.cache.outputs.cache-hit != 'true'
         working-directory: ./${{ inputs.e2eTestsRepo }}
 
@@ -345,11 +349,6 @@ jobs:
       organizationId: ${{ steps.create_org_for_tests.outputs.organizationId }}
 
     steps:
-      - name: Use Node.js 12.16.1
-        uses: actions/setup-node@v2
-        with:
-          node-version: 12.16.1
-
       - name: Set up Python 3.7.5
         uses: actions/setup-python@v2
         with:
@@ -406,6 +405,11 @@ jobs:
         env:
           TOGETHER_ENVIRONMENT: ${{ inputs.backendEnvironment }}
 
+      - name: Use backend Node.js version
+        uses: actions/setup-node@v2
+        with:
+          node-version-file: './${{ inputs.backendMentoringRepo }}/.nvmrc'
+
       - name: Start ${{ inputs.backendMentoringRepo }}
         run: yarn start-production & npx wait-on http://localhost:8080/mentoring/_release
         working-directory: ./${{ inputs.backendMentoringRepo }}
@@ -429,10 +433,10 @@ jobs:
         run: yarn serve -s build -l 3000 & npx wait-on http://localhost:3000
         working-directory: ./${{ inputs.frontendRepo }}
         
-      - name: Change node version to 12.18.0
+      - name: Change to e2e node version
         uses: actions/setup-node@v2
         with:
-          node-version: 12.18.0
+          node-version-file: './${{ inputs.e2eTestsRepo }}/.nvmrc'
 
       # Install dependencies and run all Cypress tests
       - name: Cypress run
@@ -484,10 +488,10 @@ jobs:
           service_account_key: ${{ secrets.gcp }}
           export_default_credentials: true
 
-      - name: Use Node.js 12.16.1
+      - name: Use Mentoring Service Node.js Version
         uses: actions/setup-node@v2
         with:
-          node-version: 12.16.1
+          node-version-file: './${{ inputs.backendMentoringRepo }}/.nvmrc'
 
       - name: Delete org created for testing
         run: yarn babel-node --extensions ".ts,.js" lib/scripts/deleteDemoOrg/deleteDemoOrg.js ${{needs.start-servers-and-tests.outputs.organizationId}}
