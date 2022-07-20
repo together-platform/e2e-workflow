@@ -89,8 +89,6 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/setup-node@v2
         with:
-          cache: 'yarn'
-          cache-dependency-path: './${{ inputs.backendMentoringRepo }}/yarn.lock'
           node-version-file: './${{ inputs.backendMentoringRepo }}/.nvmrc'
 
       - name: Install dependencies
@@ -156,8 +154,6 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/setup-node@v2
         with:
-          cache: 'yarn'
-          cache-dependency-path: './${{ inputs.frontendRepo }}/yarn.lock'
           node-version-file: './${{ inputs.frontendRepo }}/.nvmrc'
 
       - name: Install dependencies
@@ -308,8 +304,6 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/setup-node@v2
         with:
-          cache: 'yarn'
-          cache-dependency-path: './${{ inputs.e2eTestsRepo }}/yarn.lock'
           node-version-file: './${{ inputs.e2eTestsRepo }}/.nvmrc'
 
       - name: Install dependencies
