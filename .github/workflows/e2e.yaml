@@ -162,7 +162,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: yarn install --frozen-lockfile && yarn add serve
+        run: yarn install --frozen-lockfile
         working-directory: ./${{ inputs.frontendRepo }}
         env:
           REACT_APP_ENV: ${{ inputs.frontendEnvironment }}
@@ -430,7 +430,7 @@ jobs:
           node-version-file: './${{ inputs.frontendRepo }}/.nvmrc'
 
       - name: Start frontend
-        run: yarn serve -s build -l 3000 & npx wait-on http://localhost:3000
+        run: npx serve -s build -l 3000 & npx wait-on http://localhost:3000
         working-directory: ./${{ inputs.frontendRepo }}
         
       - name: Change to e2e node version
