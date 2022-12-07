@@ -230,11 +230,11 @@ jobs:
           path: ${{ inputs.backendPairingRepo }}
           token: ${{ secrets.token }}
 
-      - name: Set up Python 3.7.5
+      - name: Set up Python 3.7.15
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/setup-python@v2
         with:
-          python-version: "3.7.5"
+          python-version: "3.7.15"
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
@@ -247,7 +247,7 @@ jobs:
         uses: actions/cache@v2
         if: steps.cache.outputs.cache-hit != 'true'
         with:
-          path: /opt/hostedtoolcache/Python/3.7.5/x64/lib/python3.7/site-packages
+          path: /opt/hostedtoolcache/Python/3.7.15/x64/lib/python3.7/site-packages
           key: ${{ inputs.backendPairingRepo }}-dependencies-${{steps.pick_branch.outputs.commit}}
 
       - name: Set cache for sources folder
@@ -349,10 +349,10 @@ jobs:
       organizationId: ${{ steps.create_org_for_tests.outputs.organizationId }}
 
     steps:
-      - name: Set up Python 3.7.5
+      - name: Set up Python 3.7.15
         uses: actions/setup-python@v2
         with:
-          python-version: "3.7.5"
+          python-version: "3.7.15"
 
       # Required to decode secrets used in back-end services
       - name: Set up Cloud SDK
@@ -372,7 +372,7 @@ jobs:
       - name: Get ${{ inputs.backendPairingRepo }} dependencies
         uses: actions/cache@v2
         with:
-          path: /opt/hostedtoolcache/Python/3.7.5/x64/lib/python3.7/site-packages
+          path: /opt/hostedtoolcache/Python/3.7.15/x64/lib/python3.7/site-packages
           key: ${{ inputs.backendPairingRepo }}-dependencies-${{needs.backend-pairing-prepare.outputs.commit}}
 
       - name: Get ${{ inputs.backendMentoringRepo }} source and dependencies
