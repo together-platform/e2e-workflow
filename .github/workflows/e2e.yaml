@@ -230,11 +230,11 @@ jobs:
           path: ${{ inputs.backendPairingRepo }}
           token: ${{ secrets.token }}
 
-      - name: Set up Python 3.7.5
+      - name: Set up Python 3.7.15
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/setup-python@v2
         with:
-          python-version: "3.7.5"
+          python-version: "3.7.15"
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
