@@ -400,7 +400,7 @@ jobs:
           key: ${{ inputs.e2eTestsRepo }}-dependencies-${{needs.e2e-tests-prepare.outputs.commit}}
 
       - name: Start ${{ inputs.backendPairingRepo }}
-        run: make start
+        run: make start & echo 'Success'
         working-directory: ./${{ inputs.backendPairingRepo }}
         env:
           TOGETHER_ENVIRONMENT: ${{ inputs.backendEnvironment }}
