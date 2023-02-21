@@ -400,7 +400,19 @@ jobs:
           key: ${{ inputs.e2eTestsRepo }}-dependencies-${{needs.e2e-tests-prepare.outputs.commit}}
 
       - name: Start ${{ inputs.backendPairingRepo }}
-        run: make start & npx wait-on http://localhost:9000/pairing/_release
+        run: make start
+        working-directory: ./${{ inputs.backendPairingRepo }}
+        env:
+          TOGETHER_ENVIRONMENT: ${{ inputs.backendEnvironment }}
+
+      - name: Sleep + Curl command for ${{ inputs.backendPairingRepo }}
+        run: sleep 10 && curl http://localhost:9000/pairing/_release && curl http://0.0.0.0:9000/pairing/_release && curl http://127.0.0.1:9000/pairing/_release
+        working-directory: ./${{ inputs.backendPairingRepo }}
+        env:
+          TOGETHER_ENVIRONMENT: ${{ inputs.backendEnvironment }}
+
+      - name: Wait-on ${{ inputs.backendPairingRepo }}
+        run: npx wait-on http://localhost:9000/pairing/_release
         working-directory: ./${{ inputs.backendPairingRepo }}
         env:
           TOGETHER_ENVIRONMENT: ${{ inputs.backendEnvironment }}
