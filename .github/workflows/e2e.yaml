@@ -460,12 +460,6 @@ jobs:
         with:
           name: cypress-screenshots
           path: ./${{ inputs.e2eTestsRepo }}/cypress/screenshots
-      # Test run video was always captured, so this action uses "always()" condition
-      - uses: actions/upload-artifact@v1
-        if: always()
-        with:
-          name: cypress-videos
-          path: ./${{ inputs.e2eTestsRepo }}/cypress/videos/
 
   # This job runs script to delete created org for testing
   delete-org:
