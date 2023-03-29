@@ -446,6 +446,12 @@ jobs:
         with:
           node-version-file: './${{ inputs.e2eTestsRepo }}/.nvmrc'
 
+      - name: Run mentoring-service endpoint tests on ${{ inputs.backendMentoringRepo }}
+        run: yarn test:integration
+        working-directory: ./${{ inputs.backendMentoringRepo }}
+        env:
+          TOGETHER_ENVIRONMENT: ${{ inputs.backendEnvironment }}
+
       # Install dependencies and run all Cypress tests
       - name: Cypress run
         uses: cypress-io/github-action@v2
