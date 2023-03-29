@@ -446,6 +446,13 @@ jobs:
         with:
           node-version-file: './${{ inputs.e2eTestsRepo }}/.nvmrc'
 
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          cache: 'yarn'
+          cache-dependency-path: './${{ inputs.backendMentoringRepo }}/yarn.lock'
+          node-version-file: './${{ inputs.backendMentoringRepo }}/.nvmrc'
+
       - name: Run mentoring-service endpoint tests on ${{ inputs.backendMentoringRepo }}
         run: yarn test:integration
         working-directory: ./${{ inputs.backendMentoringRepo }}
