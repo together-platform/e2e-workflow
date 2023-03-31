@@ -446,20 +446,9 @@ jobs:
         with:
           node-version-file: './${{ inputs.e2eTestsRepo }}/.nvmrc'
 
-      - name: Use Node.js
-        uses: actions/setup-node@v2
-        with:
-          cache: 'yarn'
-          cache-dependency-path: './${{ inputs.backendMentoringRepo }}/yarn.lock'
-          node-version-file: './${{ inputs.backendMentoringRepo }}/.nvmrc'
-
-      - name: Run mentoring-service endpoint tests on ${{ inputs.backendMentoringRepo }}
-        run: yarn test:integration
-        working-directory: ./${{ inputs.backendMentoringRepo }}
-        env:
-          TOGETHER_ENVIRONMENT: ${{ inputs.backendEnvironment }}
 
       # Install dependencies and run all Cypress tests
+      # TODO: Deprecate these tests
       - name: Cypress run
         uses: cypress-io/github-action@v2
         with:
@@ -469,6 +458,22 @@ jobs:
         env:
           CYPRESS_ORGANIZATION_ID: ${{steps.create_org_for_tests.outputs.organizationId}}
           CYPRESS_ADMIN_PASSWORD: ${{secrets.demo_admin_password}}
+
+
+      # Sets node version to mentoring-service node version in order to run endpoint tests
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          cache: 'yarn'
+          cache-dependency-path: './${{ inputs.backendMentoringRepo }}/yarn.lock'
+          node-version-file: './${{ inputs.backendMentoringRepo }}/.nvmrc'
+
+      # run endpoint tests
+      - name: Run mentoring-service endpoint tests on ${{ inputs.backendMentoringRepo }}
+        run: yarn test:integration
+        working-directory: ./${{ inputs.backendMentoringRepo }}
+        env:
+          TOGETHER_ENVIRONMENT: ${{ inputs.backendEnvironment }}
 
       # after the test run completes
       # store videos and any screenshots
