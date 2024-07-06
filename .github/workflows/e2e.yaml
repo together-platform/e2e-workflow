@@ -34,7 +34,7 @@ jobs:
   #   @commit - representing the commit that is used for this job
   backend-mentoring-prepare:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 7
 
     outputs:
       branch: ${{ steps.pick_branch.outputs.branch }}
@@ -102,7 +102,7 @@ jobs:
   backend-pairing-prepare:
 
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 7
 
     outputs:
       branch: ${{ steps.pick_branch.outputs.branch }}
